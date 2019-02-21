@@ -186,7 +186,7 @@ class UserTab(object):
         desc_button9.style.button_color = 'lightgreen'
         desc_button10 = Button(description='mean immune cell migration persistence time', disabled=True, layout=desc_button_layout) 
         desc_button10.style.button_color = 'tan'
-        desc_button11 = Button(description='Immune cell migration speed', disabled=True, layout=desc_button_layout) 
+        desc_button11 = Button(description='immune cell migration speed', disabled=True, layout=desc_button_layout) 
         desc_button11.style.button_color = 'lightgreen'
         desc_button12 = Button(description='initial tumor radius', disabled=True, layout=desc_button_layout) 
         desc_button12.style.button_color = 'tan'
