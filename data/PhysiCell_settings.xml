@@ -139,10 +139,10 @@
 			description="cancer cells are not immunogenic for p below this value (d2)">0.1</oncoprotein_threshold> 
 			<!-- 0.5 --> 
 		<immune_kill_rate type="double" units="1/min"
-			description="rate at which attached immune cells can apoptose cancer cells (d3)">0.8762</immune_kill_rate> 
+			description="rate that attached immune cells can apoptose cancer cells (d3)">0.8762</immune_kill_rate> 
 			<!-- 15 min--> 
 		<immune_attachment_rate type="double" units="1/min"
-			description="rate at which immune cells can attach to a cell in close contact (d4)">0.72138388</immune_attachment_rate> <!-- 5 min--> 
+			description="rate that immune cells can attach to a cell in close contact (d4)">0.72138388</immune_attachment_rate> <!-- 5 min--> 
 		<immune_attachment_lifetime type="double" units="min"
 			description="max time immune cells remain attached to a target cell (d5)">90.0</immune_attachment_lifetime> 
 			<!-- 60.0 -->
