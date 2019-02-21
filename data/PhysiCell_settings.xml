@@ -156,7 +156,7 @@
 			description="immune cell O2 uptake rate (relative to cancer cells)" hidden="true">0.1</immune_o2_relative_uptake>
 		<immune_motility_persistence_time type="double" units="min"
 			description="mean immune cell migration persistence time">10</immune_motility_persistence_time>
-		<immune_migration_speed type="double" units="micron/min">1.0</immune_migration_speed>
+		<immune_migration_speed type="double" units="micron/min" description="Immune cell migration speed">1.0</immune_migration_speed>
 
 		<immune_relative_adhesion type="double" units="dimensionless"
 			description="adhesive strength relative to cancer" hidden="true">0</immune_relative_adhesion>
