@@ -350,13 +350,23 @@ class SubstrateTab(object):
 
         num_contours = 15
         levels = MaxNLocator(nbins=num_contours).tick_values(self.cmap_min.value, self.cmap_max.value)
+        contour_ok = True
         if (self.cmap_fixed.value):
-            my_plot = plt.contourf(xgrid, ygrid, M[self.field_index, :].reshape(self.numy, self.numx), levels=levels, extend='both', cmap=self.field_cmap.value)
+            try:
+                my_plot = plt.contourf(xgrid, ygrid, M[self.field_index, :].reshape(self.numy, self.numx), levels=levels, extend='both', cmap=self.field_cmap.value)
+            except:
+                contour_ok = False
+                # print('got error on contourf 1.')
         else:    
-            my_plot = plt.contourf(xgrid, ygrid, M[self.field_index, :].reshape(self.numy,self.numx), num_contours, cmap=self.field_cmap.value)
+            try:
+                my_plot = plt.contourf(xgrid, ygrid, M[self.field_index, :].reshape(self.numy,self.numx), num_contours, cmap=self.field_cmap.value)
+            except:
+                contour_ok = False
+                # print('got error on contourf 2.')
 
-        plt.title(title_str)
-        plt.colorbar(my_plot)
+        if (contour_ok):
+            plt.title(title_str)
+            plt.colorbar(my_plot)
         axes_min = 0
         axes_max = 2000
         # plt.xlim(axes_min, axes_max)
