@@ -27,6 +27,10 @@ class SubstrateTab(object):
         self.field_index = 4
         # self.field_index = self.mcds_field.value + 4
 
+        # define dummy size of mesh (set in the tool's primary module)
+        self.numx = 0
+        self.numy = 0
+
         tab_height = '500px'
         constWidth = '180px'
         constWidth2 = '150px'
@@ -185,10 +189,6 @@ class SubstrateTab(object):
             fname = os.path.join(self.output_dir, "initial.xml")
             tree = ET.parse(fname)
             xml_root = tree.getroot()
-            xcoord_vals = xml_root.find(".//x_coordinates").text.split()
-            ycoord_vals = xml_root.find(".//y_coordinates").text.split()
-            self.numx = len(xcoord_vals)
-            self.numy = len(ycoord_vals)
         except:
             print("Cannot open ",fname," to read info, e.g., names of substrate fields.")
             return
