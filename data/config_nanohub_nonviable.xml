@@ -1,0 +1,99 @@
+<PhysiCell_settings version="devel-version">
+	<domain>
+		<x_min>-750.0</x_min>
+		<x_max>750.0</x_max>
+		<y_min>-750.0</y_min>
+		<y_max>750.0</y_max>
+		<z_min>-750.0</z_min>
+		<z_max>750.0</z_max>
+		<dx>20.0</dx>
+		<dy>20.0</dy>
+		<dz>20.0</dz>
+		<use_2D>true</use_2D>
+	</domain>
+	
+	<overall>
+		<max_time units="min">30240.0</max_time> 
+		<time_units>min</time_units>
+		<space_units>micron</space_units>
+	</overall>
+	
+	<parallel>
+		<omp_num_threads>7</omp_num_threads>
+	</parallel> 
+	
+	<save>
+		<folder>.</folder>  
+
+		<full_data>
+			<interval units="min">504</interval>
+			<enable>True</enable>
+		</full_data>
+		
+		<SVG>
+			<interval units="min">60</interval>
+			<enable>True</enable>
+		</SVG>
+		
+		<legacy_data>
+			<enable>false</enable>
+		</legacy_data>
+	</save>
+	
+	<user_parameters>
+		<random_seed hidden="true" type="int" units="dimensionless">0</random_seed> 
+
+		 
+		 
+		<immune_activation_time description="time at which therapy begins" type="double" units="min">20160.0</immune_activation_time>
+			 
+		<number_of_immune_cells description="number of immune cells at start of therapy" type="int" units="dimensionless">125</number_of_immune_cells> 
+			 
+		<initial_min_immune_distance_from_tumor description="min distance from initial immune cells to tumor edge" hidden="true" type="double" units="micron">30</initial_min_immune_distance_from_tumor>
+		<thickness_of_immune_seeding_region description="how thick the layer of immune cells is at start" hidden="true" type="double" units="micron">75</thickness_of_immune_seeding_region>
+		<save_interval_after_therapy_start description="save (output) interval after therapy begins" type="double" units="min">60.0</save_interval_after_therapy_start>
+		
+		 
+		 
+		<immune_apoptosis_rate description="immune cell apoptosis rate (d1)" type="double" units="1/min">0.0006</immune_apoptosis_rate> 
+			 
+		<oncoprotein_threshold description="cancer cells are not immunogenic for p below this value (d2)" type="double" units="dimensionless">0.5</oncoprotein_threshold> 
+			 
+		<immune_kill_rate description="rate that attached immune cells can apoptose cancer cells (d3)" type="double" units="1/min">0.87625</immune_kill_rate> 
+			 
+		<immune_attachment_rate description="rate that immune cells can attach to a cell in close contact (d4)" type="double" units="1/min">0.7525</immune_attachment_rate>  
+		<immune_attachment_lifetime description="max time immune cells remain attached to a target cell (d5)" type="double" units="min">80.0</immune_attachment_lifetime> 
+			
+		<immune_migration_bias description="immune cell migration bias (d6)" type="double" units="dimensionless">0.8</immune_migration_bias>
+		
+		
+		 
+		 
+		<immune_o2_relative_uptake description="immune cell O2 uptake rate (relative to cancer cells)" hidden="true" type="double" units="dimensionless">0.1</immune_o2_relative_uptake>
+		<immune_motility_persistence_time description="mean immune cell migration persistence time" type="double" units="min">10.0</immune_motility_persistence_time>
+		<immune_migration_speed description="immune cell migration speed" type="double" units="micron/min">1.0</immune_migration_speed>
+
+		<immune_relative_adhesion description="adhesive strength relative to cancer" hidden="true" type="double" units="dimensionless">0</immune_relative_adhesion>
+		<immune_relative_repulsion description="repulsive strength relative to cancer" hidden="true" type="double" units="dimensionless">5</immune_relative_repulsion> 	
+		<elastic_coefficient description="strength of elastic focal adhesion" hidden="true" type="double" units="1/min">0.01</elastic_coefficient>		
+
+		 
+		 
+		
+		
+		<tumor_radius description="initial tumor radius" type="double" units="micron">250.0</tumor_radius> 
+		<tumor_mean_immunogenicity description="mean oncoprotein p at start" type="double" units="dimensionless">1.0</tumor_mean_immunogenicity>
+		<tumor_immunogenicity_standard_deviation description="standard deviation of tumor p at start" type="double" units="dimensionless">0.25</tumor_immunogenicity_standard_deviation>
+		
+		 
+		<oncoprotein_saturation hidden="true" type="double" units="dimensionless">2.0</oncoprotein_saturation>
+			
+			 
+		<max_attachment_distance hidden="true" type="double" units="micron">18.0</max_attachment_distance>
+			 
+		<min_attachment_distance hidden="true" type="double" units="micron">14.0</min_attachment_distance>
+			 
+
+	</user_parameters>
+	
+</PhysiCell_settings>
