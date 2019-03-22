@@ -6,6 +6,7 @@ import shutil
 import math
 import datetime
 import tempfile
+from about import AboutTab
 from config import ConfigTab
 from user_params import UserTab
 from svg import SVGTab
@@ -30,6 +31,7 @@ tab_layout = widgets.Layout(width='auto',   # border='2px solid black',
                             height=tab_height, overflow_y='scroll',)
 
 # create the tabs, but don't display yet
+about_tab = AboutTab()
 config_tab = ConfigTab()
 
 #full_filename = os.path.abspath('data/PhysiCell_settings.xml')
@@ -313,8 +315,8 @@ read_config.observe(read_config_cb, names='value')
 # )
 # write_config_row = widgets.HBox([write_config_button, write_config_box])
 
-titles = ['Config Basics', 'User Params', 'Cell Plots', 'Substrate Plots']
-tabs = widgets.Tab(children=[config_tab.tab, user_tab.tab, svg.tab, sub.tab],
+titles = ['About', 'Config Basics', 'User Params', 'Out: Cell Plots', 'Out: Substrate Plots']
+tabs = widgets.Tab(children=[about_tab.tab, config_tab.tab, user_tab.tab, svg.tab, sub.tab],
                    _titles={i: t for i, t in enumerate(titles)},
                    layout=tab_layout)
 

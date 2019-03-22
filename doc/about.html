@@ -1,0 +1,132 @@
+<h2><strong>Introduction: immunosurveillance of a heterogeneous tumor</strong></h2>
+
+<p>This app demonstrates key stochastic attachment dynamics during a cancer immune response. It is based on a 
+    published PhysiCell example in Ghaffarizadeh et al. (2018) [1], which was further explored in [4-5]. In this model, 
+    cancer cells rapidly divide while consuming oxygen, which drives the emergence of hypoxic gradients. Greater availability 
+    of oxygen drives faster proliferation, while low oxygen can trigger necrotic death, creating a necrotic 
+    core (<span style="font-weight: bold; color: brown;">brown cells</span>) in the center of the tumor. Each cell 
+    expresses a mutant &quot;oncoprotein&quot; <em>p</em>, which determines how well the cells can respond to oxygen availability 
+    to enter the cell cycle. Cells with greater <em>p</em> expression divide more rapidly. In the demonstration, cells are 
+    shaded from <span style="font-weight: bold; color: blue;">blue (lowest <em>p</em> and least proliferative)</span> to 
+    <span style="font-weight: bold; color: goldenrod;">yellow (greatest <em>p</em> and most proliferative)</span>. 
+    See further description of the untreated heterogeneous tumor at 
+    <a href="https://nanohub.org/tools/pc4heterogen" target="_blank">https://nanohub.org/tools/pc4heterogen</a>.</p>
+
+<p>As a simple model of cancer-immune contact interactions, we introduce immune cells (<span style="font-weight: bold; color: green">green</span>) later in the simulation. These immune cells peform a biased random migration towards a tumor-released immunostimulatory compound (e.g., CXCL9), test for physical contact, and form a focal adhesion. While adhered, they sample the cell&#39;s immunogenicity and attempt to induce apoptosis. (<span style="font-weight: bold; color: red">Red cells</span> are apoptotic.) If they succeed, they detach and resume their search for more targets. If they fail, they remain attached and continue attempting to induce apoptosis until reaching a maximum attachment time.</p>
+
+<p style="text-align: center;"><a href="#instructions"><strong>Click here to jump straight to the instructions.&nbsp;</strong></a></p>
+
+<p>This model and cloud-hosted demo are part of a course on computational multicellular systems biology created and taught by Dr. Paul Macklin in the Department of Intelligent Systems Engineering at Indiana University. It is also part of the education and outreach for the IU Engineered nanoBIO Node and the NCI-funded cancer systems biology grant U01CA232137. 
+    The models are built using <a href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1005991" target="_blank">PhysiCell</a>: a C++ framework for multicellular systems biology [1].</p>
+
+<h2><strong>Chemical components:</strong></h2>
+
+<p>All chemical signals move by chemical diffusion in the simulated environment, using <a href="http://dx.doi.org/10.1093/bioinformatics/btv730" target="_blank">BioFVM</a> [2] to solve the reaction-diffusion equations. A key property is the <em>diffusion length scale</em>. Diffusion (with a diffusion coefficient <em>D</em>) helps spread a signal over large distances, while decay (and uptake) (with coefficient <em>&lambda;</em>) eliminates the signal to slow its spread. These effects compete to determine the characteristic distance <i>L</i>that a chemical signal travels.</p>
+
+<p>That length scale <em>L</em>is given by <em>L</em> = sqrt( <em>D</em>/&lambda; ).</p>
+
+<p>Choosing <em>D</em> and <em>&lambda;</em> can help to tune the chemical communication distance in these models.</p>
+
+<h3>Oxygen (<em>&sigma;</em>):</h3>
+
+<p>This is released by the computational boundary (a simplified model of a far-field vasculature), and consumed by tumor cells.</p>
+
+<p>We use a far-field value of 38 mmHg (about 5%), which is a typical physioxic condition. See [1] and [2] for more ferences. We use a length scale of 1000 &mu;m, and cancer cell uptake gives a length scale of 100 &mu;m in densely packed regions.</p>
+
+<h3>Immunostimulatory factor (<em>c</em>):</h3>
+
+<p>This is released by all tumor cells to act as a chemoattractant for immune cells.</p>
+
+<p>We use no-flux boundary conditions on the computational boundary. We use a length scale of 1000 &mu;m, and cancer cell uptake gives a length scale of 100 &mu;m in densely packed regions.</p>
+
+<h2><b>Cell agents:</b></h2>
+
+<p>We use agent-based models to explore multicellular systems like this one. Each cell is modeled as a software agent with an independent state, and its own rules to change its behavior based on local environmental conditions and communication. We use PhysiCell as our modeling platform [1].&nbsp;</p>
+
+<h3>Key features in the agent-based models:</h3>
+
+<h4>Birth and death:</h4>
+
+<p>Cells can proliferate (divide into two daughter cells of half size), with division rates regulated by cell rules. In our model, cells continuously work to grow towards a &quot;target&quot; mature volume.</p>
+
+<p>Note that birth and death are stochastic events for each cell agent: if such a process occurs at rate <em>r</em>, then between now (<em>t</em>) and soon (<em>t</em> + &Delta;<em>t</em>), the probability of the event occurring for that agent is <em>r</em>&Delta;<em>t</em>.</p>
+
+<h4>Secretion and uptake:</h4>
+
+<p>Cells can secrete chemical factors, or they can remove them (i.e., consume or uptake). This can contribute to gradients in chemical factors, and it&#39;s a key method of communication between cells. Moreover, cells can &quot;sample&quot; the chemical state of their surrounding environment. Secreting is sending a signal. Uptaking and sampling is receiving a signal.</p>
+
+<h4>Biased migration:</h4>
+
+<p>Motile cells perform <em>biased migration</em>. After traveling for <em>T</em><sub>persistence</sub> time (the mean persistence time), they choose a new migration direction <span style="font-weight: bold;">d</span><sub>migrate</sub>. Based on the environmental conditions, the cell chooses a directional bias (intended direction) <span style="font-weight: bold;">d</span><sub>bias</sub> and a random unit vector <span style="font-weight: bold;">r</span>. The motile direction <span style="font-weight: bold;">d</span><sub>migrate</sub> is then determined by according to:</p>
+
+<p style="text-align: center;"><span style="font-weight: bold;">d</span><sub>migrate</sub> = b <span style="font-weight: bold;">d</span><sub>bias</sub> + (1-b) <span style="font-weight: bold;">r</span>.</p>
+
+<p>Here, <em>b</em> is a <em>bias</em> parameter (between 0 and 1) that determines how strongly biased migration is towards <span style="font-weight: bold;">d</span><sub>bias</sub>. If <em>b</em> =1, then migration is deterministic towards <span style="font-weight: bold;">d</span><sub>bias</sub>. If <em>b</em> = 0, then migration is completely random (Brownian).</p>
+
+<p>Once the migration direction is chosen, it is normalized, and multiplied by the cell&#39;s migration speed.</p>
+
+<h4>Mechanics:</h4>
+
+<p>Cell agents can stick to one another within a prescribed interaction distance (some multiple of their radius), and they can exert a pushing force on neighbors. PhysiCell [1] uses potential functions to implement these simple mechanics. Notably, PhysiCell is an off-lattice model, meaning that cells can have variable sizes, and can move freely without grid artifacts.</p>
+
+<p>They aren&#39;t required to move some prescribed number of spatial steps. They also can divide without checking for an open neighbor &quot;site&quot;. Instead, they can divide and push their neighbors out of the way.&nbsp;</p>
+
+<h4 id="focal_adhesions">Focal adhesions:</h4>
+
+<p>PhysiCell allows custom functions for any cell agents. We use this to model focal cell-cell adhesions as spring-like forces. If two cells <em>i</em> and <em>j</em> (with positions <span style="font-weight:bold">x</span><sub>i</sub> and <span style="font-weight:bold">x</span><sub>j</sub>) have a focal adhesion, then cell <em>i</em> is adhered to cell <em>j</em> with a spring-like force that we model as:</p>
+
+<p style="text-align: center;"><span style="font-weight:bold">F</span><sub>ij</sub> = <em>&epsilon;</em> (<span style="font-weight: bold;">x</span><sub><em>j</em></sub> - <span style="font-weight: bold;">x</span><sub><em>i</em></sub>),</p>
+
+<p>where <em>&epsilon;</em> is the elastic coefficient. Because PhysiCell has an inertialess formatulation (see the method paper in [1]), this is added directly to the cell&#39;s velocity, and so <em>&epsilon;</em> has units min<sup>-1</sup>. To model the finite deformability of cells and these elastic focual adhesions, we detach the cells if their distance (||<span style="font-weight: bold;">x</span><sub><em>j</em></sub> - <span style="font-weight: bold;">x</span><sub><em>j</em></sub>||) exceeds a set maximum distance <em>r</em><sub>max</sub>.</p>
+
+<h3>Cancer cells (shaded from <span style="color: blue;">blue</span> to <span style="color: goldenrod;">yellow</span>)</h3>
+
+<p>Cancer cells divide at a rate proportional to oxygen availability and oncoprotein expression <em>p</em>, and they experience necrotic death at a rate that increases as oxygen decreases. We use the default parameter values from [1] for this sample model; they cannot be adjusted by users in the current demo version. Note that all cancer cells are non-motile in this example. Oxygen-dependent cell cycle entry happens at a rate&nbsp;<em>r&nbsp;</em>modeled as&nbsp;</p>
+
+<p style="text-align: center;"><em>r</em> = <em>r</em><sub>max</sub> <em>p</em> <sup>(<em>&sigma;</em> - <em>&sigma;</em><sub>H</sub>) </sup> &frasl; <sub>(<em>&sigma;</em><sub>max</sub> - <em>&sigma;</em><sub>H</sub>)&nbsp;</sub>,</p>
+
+<p>where the oxygenation <em>&sigma;</em> is sampled at the cell&#39;s position, <em>&sigma;</em><sub>H</sub> is the hypoxic threshold below which cell cycle entry ceases, and cell cycle entry reaches a maximum rate of <em>r</em><sub>max</sub> for oxygen levels above <em>&sigma;</em><sub>max</sub>. See [1] for parameter values and further details.<sub> </sub></p>
+
+<p>Cancer cells increase their necrotic death rate <em>d</em><sub>necrosis</sub> based on their oxygenation conditions, following</p>
+
+<p style="text-align: center;"><em>d</em><sub>necrosis</sub> = <em>d</em><sub>max</sub><sup> (<em>&sigma;</em><sub>N</sub>-<em>&sigma;</em>) </sup> &frasl; <sub> (<em>&sigma;</em><sub>N</sub> - <em>&sigma;</em><sub>S</sub>)</sub>,</p>
+
+<p>where <em>&sigma;</em><sub>N</sub> is the necrotic threshold, below which cells begin to necrosis. Also, <em>d</em><sub>max</sub> is the maximum necrotic death rate that is reached when <em>&sigma; &lt;</em>&nbsp;<em>&omega;</em><sub>S</sub>. (Note that <em>&sigma;</em><sub>S</sub> &le; <em>&sigma;</em><sub>N</sub> &le; <em>&sigma;</em><sub>H</sub> &le; <em>&sigma;</em><sub>max</sub>.) See [1] for parameter values and further details. Apoptotic cancer cells are <span style="color: red; font-weight: bold">red</span>, and necrotic cancer cells are <span style="color: brown; font-weight: bold">brown.</span></p>
+
+<p>As a simple model of <a href="https://en.wikipedia.org/wiki/Major_histocompatibility_complex" target="_blank">major histocompatibility complexes (MHCs)</a>, we assume that each cell&#39;s (dimensionless) immunogenicity is equal to its mutant oncoprotein expression <em>p</em>. This models the process of mutant peptides being presented on the MHC&#39;s surface, increasing the cancer cell&#39;s vulnerability to immune predation.</p>
+
+<h3>Immune cells (<span style="color: green;">green</span>)</h3>
+
+<p>Immune cells do not divide in this simplified model, but they do apoptose at a background rate (which is analogous to their killing capacity, and related functionally related to T-cell exhaustion). They choose their migration bias for chemotaxis according to</p>
+
+<p style="text-align: center;"><span style="font-weight: bold;">d</span><sub>bias</sub> = &nabla;<em>c.</em></p>
+
+<p>Migrating immune cells continuously test for collision (contact) with other cells. When an immune cell detects a contact, it attempts to form a focal adhesion 
+    (see <a href="focal_adhesions">focal adhesion</a>). In any short time interval [<em>t</em> , <em>t</em>+&Delta;<em>t</em>], this attachment probability is</p>
+
+<p style="text-align: center;"><em>P</em><sub>attach</sub> = <em>p</em> <em>r</em><sub>attach</sub> &Delta;<em>t</em>,</p>
+
+<p>where <em>r</em><sub>attach</sub> is the mean attachment rate for the immune cells.</p>
+
+<p>Once attached, the immune cell samples <em>p</em> to test immunogenicity. In any short time span [<em>t</em> , <em>t</em>+&Delta;<em>t</em>], the immune cell has a probability of inducing apoptosis in the attached cell (e.g., via FAS) given by:</p>
+
+<p style="text-align: center;"><em>P</em><sub>kill</sub> = <em>p</em> <em>r</em><sub>kill</sub> &Delta;<em>t</em>,</p>
+
+<p>where <em>p</em> is the cancer cell&#39;s mutant oncoprotein expresion, and <em>r</em><sub>kill</sub> is the immune cell killing rate. Apoptotic tumor cells are colored <span style="font-weight: bold; color: red">red</span>.</p>
+
+<p>If the immune cell successfully induces apoptosis in the attached cell, it detaches and resumes its search for more targets. Otherwise, it remains attached and continues to attempt inducing apoptosis. While attached, its probability of detaching between now (<em>t</em>) and the next time step (<em>t</em> + &Delta;<em>t</em>) is given by:</p>
+
+<p style="text-align: center;"><em>P</em><sub>detach</sub> = <sup>&Delta;<em>t</em></sup>&frasl;<sub><em>T</em><sub>detach</sub></sub>,</p>
+
+<p>where <em>T</em><sub>detach</sub> is the (mean) maximum attachment duration.</p>
+
+<h2><a id="instructions" name="instructions">Basic instructions</a></h2>
+
+<p>Modify the parameters in the &quot;config basics&quot; and &quot;user params&quot; tabs. Click the &quot;run&quot; button once ready.</p>
+
+<p>To view the cell plots, click the &quot;cell plots&quot; tab, and slide the bar to advance through simulation frames. Note that as the simulation runs, the &quot;max&quot; field (maximum frame number) will increase, so you can view more simulation frames.</p>
+
+<p>To view the substrate fields, click the &quot;substrate plots&quot; tab, choose a substrate from the drop-down menu, and slide through the saved times. Note that as the simulation runs, the &quot;max&quot; field (maximum frame number) will increase, so you can view more simulation frames.</p>
+
+<p>Note that you can download full simulation data for further exploration in your tools of choice.</p>
+
