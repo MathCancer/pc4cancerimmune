@@ -85,8 +85,6 @@ def read_config_cb(_b):
         
 # Using the param values in the GUI, write a new .xml config file
 def write_config_file(name):
-    # Read in the default xml config file, just to get a valid 'root' to populate a new one
-#    full_filename = os.path.abspath('data/PhysiCell_settings.xml')  # does Windows like this?
 #    xml_file = os.path.join('data', 'PhysiCell_settings.xml')
 #    full_filename = os.path.abspath(xml_file)
     # with debug_view:
@@ -105,7 +103,6 @@ def write_config_file(name):
 
 # callback from write_config_button
 def write_config_file_cb(b):
-#    dirname = os.path.expanduser('~/.local/share/pc4cancerimmune')  # does Windows like this?
     path_to_share = os.path.join('~', '.local','share','pc4cancerimmune')
     dirname = os.path.expanduser(path_to_share)
 
@@ -118,11 +115,7 @@ def write_config_file_cb(b):
 # Fill the "Load Config" dropdown widget with valid cached results (and 
 # default & previous config options)
 def get_config_files():
-#    xml_file = os.path.join('data', 'PhysiCell_settings.xml')
-#    cf = {'DEFAULT': os.path.abspath('data/PhysiCell_settings.xml')}  # does Windows like this?
-#    cf = {'DEFAULT': os.path.abspath(xml_file)}
     cf = {'DEFAULT': full_xml_filename}
-#    dirname = os.path.expanduser('~/.local/share/pc4cancerimmune')  # does Windows like this?
     path_to_share = os.path.join('~', '.local','share','pc4cancerimmune')
     dirname = os.path.expanduser(path_to_share)
     try:
@@ -223,7 +216,7 @@ def run_sim_func(s):
     os.makedirs('tmpdir')
 
     # write the default config file to tmpdir
-    new_config_file = "tmpdir/config.xml"  # use Path
+    new_config_file = "tmpdir/config.xml"  # use Path; work on Windows?
     write_config_file(new_config_file)  
 
     with open(new_config_file) as f:
@@ -322,18 +315,26 @@ tabs = widgets.Tab(children=[about_tab.tab, config_tab.tab, user_tab.tab, svg.ta
 
 homedir = os.getcwd()
 
+#desc_button6 = Button(description='pc4cancerimmune', disabled=True, layout=desc_button_layout) 
+#title_button = widgets.Button(description='pc4cancerimmune', disabled=True) 
+#title_button.style.button_color = 'tan'
+tool_title = widgets.Label(r'\(\textbf{pc4cancerimmune}\)')
 if nanoHUB_flag:
     remote_cb = widgets.Checkbox(indent=False, value=False, description='Submit as Batch Job to Clusters/Grid')
     #gui = widgets.VBox(children=[read_config, tabs, write_config_row, remote_cb, run_button.w])
 
     # Let's not allow for batch runs for this tool.
     # gui = widgets.VBox(children=[read_config, tabs, remote_cb, run_button.w])
-    gui = widgets.VBox(children=[read_config, tabs, run_button.w])
+    top_row = widgets.HBox(children=[read_config, tool_title])
+#    gui = widgets.VBox(children=[read_config, tabs, run_button.w])
+    gui = widgets.VBox(children=[top_row, tabs, run_button.w])
     #gui = widgets.VBox(children=[tabs, run_button.w])
 else:
     #gui = widgets.VBox(children=[read_config, tabs, write_config_row, run_button.w])
     #gui = widgets.VBox(children=[read_config, tabs, run_button.w])
-    gui = widgets.VBox(children=[tabs, run_button.w])
+    top_row = widgets.HBox(children=[tool_title])
+    gui = widgets.VBox(children=[top_row, tabs, run_button.w])
+
 fill_gui_params(read_config.options['DEFAULT'])
 
 # pass in (relative) directory where output data is located

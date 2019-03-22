@@ -312,10 +312,7 @@ class SubstrateTab(object):
 
 #        if not os.path.isfile(fullname):
         if not os.path.isfile(full_fname):
-#            print("File does not exist: ", full_fname)
-#            print("No: ", full_fname)
-            print("Missing output file (likely not generated yet)")  # No:  output00000000_microenvironment0.mat
-
+            print("Once output files are generated, click the slider.")  # No:  output00000000_microenvironment0.mat
             return
 
 #        tree = ET.parse(xml_fname)
