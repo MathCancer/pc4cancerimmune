@@ -22,19 +22,17 @@ if platform.system() != 'Windows':
         from hublib.ui import RunCommand, Submit
     except:
         hublib_flag = False
+else:
+    hublib_flag = False
 
 
 # join_our_list = "(Join/ask questions at https://groups.google.com/forum/#!forum/physicell-users)\n"
 
-tab_height = 'auto'
-tab_layout = widgets.Layout(width='auto',   # border='2px solid black',
-                            height=tab_height, overflow_y='scroll',)
 
 # create the tabs, but don't display yet
 about_tab = AboutTab()
 config_tab = ConfigTab()
 
-#full_filename = os.path.abspath('data/PhysiCell_settings.xml')
 xml_file = os.path.join('data', 'PhysiCell_settings.xml')
 full_xml_filename = os.path.abspath(xml_file)
 
@@ -83,10 +81,9 @@ def read_config_cb(_b):
         svg.update('')
         sub.update('')
         
+
 # Using the param values in the GUI, write a new .xml config file
 def write_config_file(name):
-#    xml_file = os.path.join('data', 'PhysiCell_settings.xml')
-#    full_filename = os.path.abspath(xml_file)
     # with debug_view:
     #     print("write_config_file: based on ",full_filename)
     tree = ET.parse(full_xml_filename)  # this file cannot be overwritten; part of tool distro
@@ -111,6 +108,7 @@ def write_config_file_cb(b):
         val = write_config_box.placeholder
     name = os.path.join(dirname, val)
     write_config_file(name)
+
 
 # Fill the "Load Config" dropdown widget with valid cached results (and 
 # default & previous config options)
@@ -151,6 +149,7 @@ def get_config_files():
     sorted_dirs = sorted(dirs, key=os.path.getctime, reverse=True)
     # with debug_view:
     #     print(sorted_dirs)
+
     # Get a list of timestamps associated with each dir
     sorted_dirs_dates = [str(datetime.datetime.fromtimestamp(os.path.getctime(x))) for x in sorted_dirs]
     # Create a dict of {timestamp:dir} pairs
@@ -159,6 +158,7 @@ def get_config_files():
     # with debug_view:
     #     print(cf)
     return cf
+
 
 # Using params in a config (.xml) file, fill GUI widget values in each of the "input" tabs
 def fill_gui_params(config_file):
@@ -198,7 +198,7 @@ def run_done_func(s, rdir):
     #     print('RDF DONE')
 
 
-# This is used now for the RunCommand
+# This is used now for the ("smart") RunCommand
 def run_sim_func(s):
     # with debug_view:
     #     print('run_sim_func')
@@ -252,7 +252,8 @@ def outcb(s):
         sub.update('')
     return s
 
-# Callback for the (dumb) 'Run' button (without hublib.ui)
+
+# Callback for the ("dumb") 'Run' button (without hublib.ui)
 def run_button_cb(s):
 #    with debug_view:
 #        print('run_button_cb')
@@ -296,18 +297,8 @@ read_config = widgets.Dropdown(
 read_config.style = {'description_width': '%sch' % str(len(read_config.description) + 1)}
 read_config.observe(read_config_cb, names='value') 
 
-# write_config_button = widgets.Button(
-#     description='Write config file',
-#     button_style='success',  # 'success', 'info', 'warning', 'danger' or ''
-#     tooltip='Generate XML',
-# )
-# write_config_button.on_click(write_config_file_cb)
-# write_config_box = widgets.Text(
-#     placeholder='my_nanobio_settings.xml',
-#     description='',
-# )
-# write_config_row = widgets.HBox([write_config_button, write_config_box])
-
+tab_height = 'auto'
+tab_layout = widgets.Layout(width='auto',height=tab_height, overflow_y='scroll',)   # border='2px solid black',
 titles = ['About', 'Config Basics', 'User Params', 'Out: Cell Plots', 'Out: Substrate Plots']
 tabs = widgets.Tab(children=[about_tab.tab, config_tab.tab, user_tab.tab, svg.tab, sub.tab],
                    _titles={i: t for i, t in enumerate(titles)},
@@ -315,33 +306,23 @@ tabs = widgets.Tab(children=[about_tab.tab, config_tab.tab, user_tab.tab, svg.ta
 
 homedir = os.getcwd()
 
-#desc_button6 = Button(description='pc4cancerimmune', disabled=True, layout=desc_button_layout) 
-#title_button = widgets.Button(description='pc4cancerimmune', disabled=True) 
-#title_button.style.button_color = 'tan'
 tool_title = widgets.Label(r'\(\textbf{pc4cancerimmune}\)')
-if nanoHUB_flag:
+if nanoHUB_flag or hublib_flag:
+    # define this, but don't use (yet)
     remote_cb = widgets.Checkbox(indent=False, value=False, description='Submit as Batch Job to Clusters/Grid')
-    #gui = widgets.VBox(children=[read_config, tabs, write_config_row, remote_cb, run_button.w])
 
-    # Let's not allow for batch runs for this tool.
-    # gui = widgets.VBox(children=[read_config, tabs, remote_cb, run_button.w])
     top_row = widgets.HBox(children=[read_config, tool_title])
-#    gui = widgets.VBox(children=[read_config, tabs, run_button.w])
     gui = widgets.VBox(children=[top_row, tabs, run_button.w])
-    #gui = widgets.VBox(children=[tabs, run_button.w])
-else:
-    #gui = widgets.VBox(children=[read_config, tabs, write_config_row, run_button.w])
-    #gui = widgets.VBox(children=[read_config, tabs, run_button.w])
+else:  # missing hublib (e.g. Windows desktop)
+    gui_height = '900px'
+    gui_layout = widgets.Layout(width='auto',height=gui_height, overflow_y='scroll',)
     top_row = widgets.HBox(children=[tool_title])
-    gui = widgets.VBox(children=[top_row, tabs, run_button.w])
+    gui = widgets.VBox(children=[top_row, tabs, run_button], layout=gui_layout)
 
 fill_gui_params(read_config.options['DEFAULT'])
 
 # pass in (relative) directory where output data is located
-#svg.update(read_config.value)
-#output_dir = "output"
 output_dir = "tmpdir"
 svg.update(output_dir)
-#sub.update_dropdown_fields(output_dir)
 sub.update_dropdown_fields("data")
 sub.update(output_dir)
