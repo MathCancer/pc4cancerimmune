@@ -65,25 +65,56 @@
 ###############################################################################
 */
 
-#include <iostream>
-#include <fstream>
-#include <cstdio>
-#include <cstdlib>
-#include <string>
+#include "../core/PhysiCell.h"
+#include "../modules/PhysiCell_standard_modules.h" 
 
-#ifndef _PhysiCell_SVG_h_
-#define _PhysiCell_SVG_h_
+using namespace BioFVM; 
+using namespace PhysiCell;
 
-bool Write_SVG_start( std::ostream& os, double width, double height );
-bool Write_SVG_end( std::ostream& os );
+// custom cell phenotype function to scale immunostimulatory factor with hypoxia 
+void tumor_cell_phenotype_with_and_immune_stimulation( Cell* pCell, Phenotype& phenotype, double dt ); 
 
-bool Write_SVG_text( std::ostream& os, const char* str , double position_x, double position_y, double font_size , const char* color , const char* font);
-bool Write_SVG_circle( std::ostream& os, double center_x, double center_y, double radius, double stroke_size, std::string stroke_color , std::string fill_color );
+extern Cell_Definition immune_cell; 
 
-bool Write_SVG_rect( std::ostream& os , double UL_corner_x, double UL_corner_y, double width, double height,
-                     double stroke_size, std::string stroke_color , std::string fill_color );
+void create_immune_cell_type( void ); 
 
-bool Write_SVG_line( std::ostream& os , double start_x, double start_y, double end_x , double end_y, double thickness, 
-                    std::string stroke_color );  
+// set the tumor cell properties, then call the function 
+// to set up the tumor cells 
+void create_cell_types( void );
 
-#endif
+void setup_tissue(); 
+
+void introduce_immune_cells( void ); 
+
+// set up the microenvironment to include the immunostimulatory factor 
+void setup_microenvironment( void );   
+
+std::vector<std::string> cancer_immune_coloring_function( Cell* );
+
+// cell rules for extra elastic adhesion
+
+void attach_cells( Cell* pCell_1, Cell* pCell_2 );
+void dettach_cells( Cell* pCell_1 , Cell* pCell_2 );
+
+void add_elastic_velocity( Cell* pActingOn, Cell* pAttachedTo , double elastic_constant ); 
+void extra_elastic_attachment_mechanics( Cell* pCell, Phenotype& phenotype, double dt );
+
+// immune cell functions for attacking a cell 
+Cell* immune_cell_check_neighbors_for_attachment( Cell* pAttacker , double dt ); 
+bool immune_cell_attempt_attachment( Cell* pAttacker, Cell* pTarget , double dt ); // only attack if oncoprotein 
+bool immune_cell_attempt_apoptosis( Cell* pAttacker, Cell* pTarget, double dt ); 
+bool immune_cell_trigger_apoptosis( Cell* pAttacker, Cell* pTarget ); 
+
+void immune_cell_rule( Cell* pCell, Phenotype& phenotype, double dt ); 
+
+
+
+void immune_cell_attach( Cell* pAttacker, Cell* pTarget ); // use attach_cells?? 
+void immune_cell_dettach( Cell* pAttacker, Cell* pTarget ); // use dettach_cells ?? 
+
+
+// immune cell functions for motility 
+
+void immune_cell_motility( Cell* pCell, Phenotype& phenotype, double dt ); 
+
+

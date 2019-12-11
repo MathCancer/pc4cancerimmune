@@ -1,6 +1,5 @@
-VERSION := 1.0.0
-#PROGRAM_NAME := cancer-immune-EMEWS2
-PROGRAM_NAME := myproj
+VERSION := $(shell grep . VERSION.txt | cut -f1 -d:)
+PROGRAM_NAME:= myproj
 
 CC := g++
 # CC := g++-mp-7 # typical macports compiler name
@@ -31,7 +30,8 @@ ARCH := native # best auto-tuning
 # ARCH := nocona #64-bit pentium 4 or later 
 
 # CFLAGS := -march=$(ARCH) -Ofast -s -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
-CFLAGS := -march=$(ARCH) -O3 -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
+# remove the -march arg to avoid SIGILL error on nanoHUB
+CFLAGS := -O3 -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
 
 COMPILE_COMMAND := $(CC) $(CFLAGS) 
 
@@ -52,8 +52,8 @@ pugixml_OBJECTS := pugixml.o
 PhysiCell_OBJECTS := $(BioFVM_OBJECTS)  $(pugixml_OBJECTS) $(PhysiCell_core_OBJECTS) $(PhysiCell_module_OBJECTS)
 ALL_OBJECTS := $(PhysiCell_OBJECTS) $(PhysiCell_custom_module_OBJECTS)
 	
-all: main-immune.cpp $(ALL_OBJECTS)
-	$(COMPILE_COMMAND) -o $(PROGRAM_NAME) $(ALL_OBJECTS) main-immune.cpp 
+all: main.cpp $(ALL_OBJECTS)
+	$(COMPILE_COMMAND) -o $(PROGRAM_NAME) $(ALL_OBJECTS) main.cpp 
 
 # PhysiCell core components	
 
@@ -144,26 +144,26 @@ reset:
 	touch ./custom_modules/empty.txt 
 	touch ALL_CITATIONS.txt 
 	rm ALL_CITATIONS.txt 
-	cp ./config/PhysiCell_settings_default.xml ./config/PhysiCell_settings.xml 
-	touch ./config/empty.txt
+	cp ./config/PhysiCell_settings-backup.xml ./config/PhysiCell_settings.xml 
 	
-install: all
+# next 2 targets for nanoHUB
+install: 
+	. /etc/environ.sh; use -e -r anaconda3-5.1; make all
 	cp $(PROGRAM_NAME) ../bin
-
-clean:
-	rm -f *.o
-#	rm -f $(PROGRAM_NAME)*
-	rm -f $(PROGRAM_NAME)
 
 distclean: clean
 	rm -f ../bin/$(PROGRAM_NAME)
+
+clean:
+	rm -f *.o
+	rm -f $(PROGRAM_NAME)
 	
 data-cleanup:
 	rm -f *.mat
 	rm -f *.xml
 	rm -f *.svg
 	rm -f ./output/*
-	touch ./config/empty.txt
+	touch ./output/empty.txt
 	
 # archival 
 	

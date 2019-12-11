@@ -8,18 +8,21 @@ import datetime
 import tempfile
 from about import AboutTab
 from config import ConfigTab
+from microenv_params import MicroenvTab
 from user_params import UserTab
-from svg import SVGTab
+# from svg import SVGTab
 from substrates import SubstrateTab
 from pathlib import Path
-from debug import debug_view
 import platform
+import subprocess
+from debug import debug_view
 
 hublib_flag = True
 if platform.system() != 'Windows':
     try:
 #        print("Trying to import hublib.ui")
         from hublib.ui import RunCommand, Submit
+        # from hublib2.ui import RunCommand, Submit
     except:
         hublib_flag = False
 else:
@@ -38,8 +41,9 @@ full_xml_filename = os.path.abspath(xml_file)
 
 tree = ET.parse(full_xml_filename)  # this file cannot be overwritten; part of tool distro
 xml_root = tree.getroot()
+microenv_tab = MicroenvTab()
 user_tab = UserTab()
-svg = SVGTab()
+# svg = SVGTab()
 sub = SubstrateTab()
 
 nanoHUB_flag = False
@@ -47,25 +51,33 @@ if( 'HOME' in os.environ.keys() ):
     nanoHUB_flag = "home/nanohub" in os.environ['HOME']
 
 
+# callback when user selects a cached run in the 'Load Config' dropdown widget.
+# HOWEVER, beware if/when this is called after a sim finishes and the Load Config dropdown widget reverts to 'DEFAULT'.
+# In that case, we don't want to recompute substrate.py self.numx, self.numy because we're still displaying plots from previous sim.
 def read_config_cb(_b):
     # with debug_view:
     #     print("read_config_cb", read_config.value)
 
+    sub.first_time = True
+
     if read_config.value is None:  #occurs when a Run just finishes and we update pulldown with the new cache dir??
         # with debug_view:
         #     print("NOTE: read_config_cb(): No read_config.value. Returning!")
+        # print("NOTE: read_config_cb(): No read_config.value. Returning!")
         return
 
     if os.path.isdir(read_config.value):
         is_dir = True
         config_file = os.path.join(read_config.value, 'config.xml')
+        # print("read_config_cb(): is_dir=True; config_file=",config_file)
     else:
         is_dir = False
         config_file = read_config.value
+        # print("read_config_cb(): is_dir=False; --- config_file=",config_file)
 
     if Path(config_file).is_file():
         # with debug_view:
-        #     print("read_config_cb:  calling fill_gui_params with ",config_file)
+        # print("read_config_cb():  calling fill_gui_params with ",config_file)
         fill_gui_params(config_file)  #should verify file exists!
     else:
         # with debug_view:
@@ -74,12 +86,19 @@ def read_config_cb(_b):
     
     # update visualization tabs
     if is_dir:
-        svg.update(read_config.value)
+        # svg.update(read_config.value)
+        # print("read_config_cb():  is_dir True, calling update_params")
+        sub.update_params(config_tab, user_tab)
         sub.update(read_config.value)
-    else:  # may want to distinguish "DEFAULT" from other saved .xml config files
+    # else:  # may want to distinguish "DEFAULT" from other saved .xml config files
         # FIXME: really need a call to clear the visualizations
-        svg.update('')
-        sub.update('')
+        # svg.update('')
+        # sub.update('')
+        # print("read_config_cb():  is_dir False, calling update_params")
+        # sub.update_params(config_tab)
+        # print("read_config_cb():  is_dir False, calling sub.update()")
+        # sub.update()  # NOTE: even if we attempt this, it doesn't really refresh the plots
+        # pass
         
 
 # Using the param values in the GUI, write a new .xml config file
@@ -89,32 +108,34 @@ def write_config_file(name):
     tree = ET.parse(full_xml_filename)  # this file cannot be overwritten; part of tool distro
     xml_root = tree.getroot()
     config_tab.fill_xml(xml_root)
+    microenv_tab.fill_xml(xml_root)
     user_tab.fill_xml(xml_root)
     tree.write(name)
 
     # update substrate mesh layout (beware of https://docs.python.org/3/library/functions.html#round)
-    sub.numx =  math.ceil( (config_tab.xmax.value - config_tab.xmin.value) / config_tab.xdelta.value )
-    sub.numy =  math.ceil( (config_tab.ymax.value - config_tab.ymin.value) / config_tab.ydelta.value )
-    # print("------- sub.numx, sub.numy = ", sub.numx, sub.numy)
+    sub.update_params(config_tab, user_tab)
+    # sub.numx =  math.ceil( (config_tab.xmax.value - config_tab.xmin.value) / config_tab.xdelta.value )
+    # sub.numy =  math.ceil( (config_tab.ymax.value - config_tab.ymin.value) / config_tab.ydelta.value )
+    # print("pc4cancerimmune_v2.py: ------- sub.numx, sub.numy = ", sub.numx, sub.numy)
 
 
 # callback from write_config_button
-def write_config_file_cb(b):
-    path_to_share = os.path.join('~', '.local','share','pc4cancerimmune')
-    dirname = os.path.expanduser(path_to_share)
+# def write_config_file_cb(b):
+#     path_to_share = os.path.join('~', '.local','share','pc4cancerimmune_v2')
+#     dirname = os.path.expanduser(path_to_share)
 
-    val = write_config_box.value
-    if val == '':
-        val = write_config_box.placeholder
-    name = os.path.join(dirname, val)
-    write_config_file(name)
+#     val = write_config_box.value
+#     if val == '':
+#         val = write_config_box.placeholder
+#     name = os.path.join(dirname, val)
+#     write_config_file(name)
 
 
 # Fill the "Load Config" dropdown widget with valid cached results (and 
 # default & previous config options)
 def get_config_files():
     cf = {'DEFAULT': full_xml_filename}
-    path_to_share = os.path.join('~', '.local','share','pc4cancerimmune')
+    path_to_share = os.path.join('~', '.local','share','pc4cancerimmune_v2')
     dirname = os.path.expanduser(path_to_share)
     try:
         os.makedirs(dirname)
@@ -126,14 +147,14 @@ def get_config_files():
 
     # Find the dir path (full_path) to the cached dirs
     if nanoHUB_flag:
-        full_path = os.path.expanduser("~/data/results/.submit_cache/pc4cancerimmune")  # does Windows like this?
+        full_path = os.path.expanduser("~/data/results/.submit_cache/pc4cancerimmune_v2")  # does Windows like this?
     else:
         # local cache
         try:
             cachedir = os.environ['CACHEDIR']
-            full_path = os.path.join(cachedir, "pc4cancerimmune")
+            full_path = os.path.join(cachedir, "pc4cancerimmune_v2")
         except:
-            print("Exception in get_config_files")
+            # print("Exception in get_config_files")
             return cf
 
     # Put all those cached (full) dirs into a list
@@ -164,9 +185,11 @@ def get_config_files():
 def fill_gui_params(config_file):
     # with debug_view:
     #     print("fill_gui_params: filling with ",config_file)
+    # print("fill_gui_params: filling with ",config_file)
     tree = ET.parse(config_file)
     xml_root = tree.getroot()
     config_tab.fill_gui(xml_root)
+    microenv_tab.fill_gui(xml_root)
     user_tab.fill_gui(xml_root)
 
 
@@ -176,7 +199,7 @@ def run_done_func(s, rdir):
     
     if nanoHUB_flag:
         # Email the user that their job has completed
-        os.system("submit  mail2self -s 'nanoHUB pc4cancerimmune' -t 'Your Run completed.'&")
+        os.system("submit  mail2self -s 'nanoHUB pc4cancerimmune_v2' -t 'Your Run completed.'&")
 
     # save the config file to the cache directory
     shutil.copy('config.xml', rdir)
@@ -191,9 +214,13 @@ def run_done_func(s, rdir):
     # with debug_view:
     #     print('run_done_func: ---- after updating read_config.options')
 
+    # sub.update_dropdown_fields("data")   # WARNING: fill in the substrate field(s)
+
     # and update visualizations
-    svg.update(rdir)
+    # svg.update(rdir)
     sub.update(rdir)
+
+
     # with debug_view:
     #     print('RDF DONE')
 
@@ -202,6 +229,17 @@ def run_done_func(s, rdir):
 def run_sim_func(s):
     # with debug_view:
     #     print('run_sim_func')
+
+    if config_tab.toggle_svg.value == False:
+        sub.cells_toggle.value = False
+        sub.cells_toggle.disabled = True
+    else:
+        sub.cells_toggle.disabled = False
+    if config_tab.toggle_mcds.value == False:
+        sub.substrates_toggle.value = False
+        sub.substrates_toggle.disabled = True
+    else:
+        sub.substrates_toggle.disabled = False
 
     # make sure we are where we started
     os.chdir(homedir)
@@ -224,12 +262,13 @@ def run_sim_func(s):
 
     tdir = os.path.abspath('tmpdir')
     os.chdir(tdir)  # operate from tmpdir; temporary output goes here.  may be copied to cache later
-    svg.update(tdir)
+    # svg.update(tdir)
+    # sub.update_params(config_tab)
     sub.update(tdir)
 
     if nanoHUB_flag:
         if remote_cb.value:
-            s.run(run_name, "-v ncn-hub_M@brown -n 8 -w 1440 pc4cancerimmune-r7 config.xml")   # "-r7" suffix??
+            s.run(run_name, "-v ncn-hub_M@brown -n 8 -w 1440 pc4cancerimmune_v2-r7 config.xml")   # "-r7" suffix??
         else:
             # read_config.index = 0   # reset Dropdown 'Load Config' to 'DEFAULT' when Run interactively
             s.run(run_name, "--local ../bin/myproj config.xml")
@@ -246,10 +285,13 @@ def run_sim_func(s):
 def outcb(s):
     # This is called when new output is received.
     # Only update file list for certain messages: 
-    if "simulat" in s:
+    # print("outcb(): s=",s)
+    if "simulat" in s:    # "current simulated time: 60 min (max: 14400 min)"
         # New Data. update visualizations
-        svg.update('')
-        sub.update('')
+        # svg.update('')
+        # sub.update('')
+        # sub.update_params(config_tab)
+        sub.update()
     return s
 
 
@@ -258,26 +300,48 @@ def run_button_cb(s):
 #    with debug_view:
 #        print('run_button_cb')
 
-#    new_config_file = "config.xml"
-    new_config_file = full_xml_filename
-    write_config_file(new_config_file)
-#    subprocess.call(["biorobots", xml_file_out])
-#    subprocess.call(["myproj", new_config_file])   # spews to shell, but not ctl-C'able
-#    subprocess.call(["myproj", new_config_file], shell=True)  # no
-    subprocess.Popen(["myproj", new_config_file])
+#    new_config_file = full_xml_filename
+    # print("new_config_file = ", new_config_file)
+#    write_config_file(new_config_file)
 
+    # make sure we are where we started
+    os.chdir(homedir)
+
+    # remove any previous data
+    # NOTE: this dir name needs to match the <folder>  in /data/<config_file.xml>
+    os.system('rm -rf tmpdir*')
+    if os.path.isdir('tmpdir'):
+        # something on NFS causing issues...
+        tname = tempfile.mkdtemp(suffix='.bak', prefix='tmpdir_', dir='.')
+        shutil.move('tmpdir', tname)
+    os.makedirs('tmpdir')
+
+    # write the default config file to tmpdir
+    new_config_file = "tmpdir/config.xml"  # use Path; work on Windows?
+    write_config_file(new_config_file)  
+
+    tdir = os.path.abspath('tmpdir')
+    os.chdir(tdir)  # operate from tmpdir; temporary output goes here.  may be copied to cache later
+    # svg.update(tdir)
+    # sub.update_params(config_tab)
+    sub.update(tdir)
+
+    subprocess.Popen(["../bin/myproj", "config.xml"])
+
+
+#-------------------------------------------------
 if nanoHUB_flag:
     run_button = Submit(label='Run',
                        start_func=run_sim_func,
                         done_func=run_done_func,
-                        cachename='pc4cancerimmune',
+                        cachename='pc4cancerimmune_v2',
                         showcache=False,
                         outcb=outcb)
 else:
     if (hublib_flag):
         run_button = RunCommand(start_func=run_sim_func,
                             done_func=run_done_func,
-                            cachename='pc4cancerimmune',
+                            cachename='pc4cancerimmune_v2',
                             showcache=False,
                             outcb=outcb)  
     else:
@@ -289,40 +353,46 @@ else:
         run_button.on_click(run_button_cb)
 
 
-read_config = widgets.Dropdown(
-    description='Load Config',
-    options=get_config_files(),
-    tooltip='Config File or Previous Run',
-)
-read_config.style = {'description_width': '%sch' % str(len(read_config.description) + 1)}
-read_config.observe(read_config_cb, names='value') 
+if nanoHUB_flag or hublib_flag:
+    read_config = widgets.Dropdown(
+        description='Load Config',
+        options=get_config_files(),
+        tooltip='Config File or Previous Run',
+    )
+    read_config.style = {'description_width': '%sch' % str(len(read_config.description) + 1)}
+    read_config.observe(read_config_cb, names='value') 
 
 tab_height = 'auto'
 tab_layout = widgets.Layout(width='auto',height=tab_height, overflow_y='scroll',)   # border='2px solid black',
-titles = ['About', 'Config Basics', 'User Params', 'Out: Cell Plots', 'Out: Substrate Plots']
-tabs = widgets.Tab(children=[about_tab.tab, config_tab.tab, user_tab.tab, svg.tab, sub.tab],
+#titles = ['About', 'Config Basics', 'Microenvironment', 'User Params', 'Out: Cell Plots', 'Out: Substrate Plots']
+titles = ['About', 'Config Basics', 'Microenvironment', 'User Params', 'Out: Plots']
+#tabs = widgets.Tab(children=[about_tab.tab, config_tab.tab, microenv_tab.tab, user_tab.tab, svg.tab, sub.tab],
+tabs = widgets.Tab(children=[about_tab.tab, config_tab.tab, microenv_tab.tab, user_tab.tab, sub.tab],
                    _titles={i: t for i, t in enumerate(titles)},
                    layout=tab_layout)
 
 homedir = os.getcwd()
 
-tool_title = widgets.Label(r'\(\textbf{pc4cancerimmune}\)')
+tool_title = widgets.Label(r'\(\textbf{Cancer immune response (2D)}\)')
 if nanoHUB_flag or hublib_flag:
     # define this, but don't use (yet)
     remote_cb = widgets.Checkbox(indent=False, value=False, description='Submit as Batch Job to Clusters/Grid')
 
     top_row = widgets.HBox(children=[read_config, tool_title])
     gui = widgets.VBox(children=[top_row, tabs, run_button.w])
-else:  # missing hublib (e.g. Windows desktop)
-    gui_height = '900px'
-    gui_layout = widgets.Layout(width='auto',height=gui_height, overflow_y='scroll',)
+    fill_gui_params(read_config.options['DEFAULT'])
+else:
     top_row = widgets.HBox(children=[tool_title])
-    gui = widgets.VBox(children=[top_row, tabs, run_button], layout=gui_layout)
+    gui = widgets.VBox(children=[top_row, tabs, run_button])
+    fill_gui_params("data/PhysiCell_settings.xml")
 
-fill_gui_params(read_config.options['DEFAULT'])
 
 # pass in (relative) directory where output data is located
 output_dir = "tmpdir"
-svg.update(output_dir)
-sub.update_dropdown_fields("data")
-sub.update(output_dir)
+# svg.update(output_dir)
+
+sub.update_dropdown_fields("data")   # WARNING: generates multiple "<Figure size...>" stdout!
+
+# print('config_tab.svg_interval.value= ',config_tab.svg_interval.value )
+# print('config_tab.mcds_interval.value= ',config_tab.mcds_interval.value )
+#sub.update_params(config_tab)

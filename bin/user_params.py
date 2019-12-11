@@ -245,7 +245,13 @@ class UserTab(object):
 
     # Populate the GUI widgets with values from the XML
     def fill_gui(self, xml_root):
-        uep = xml_root.find('.//user_parameters')  # find unique entry point into XML
+        uep = xml_root.find('.//microenvironment_setup')  # find unique entry point
+        vp = []   # pointers to <variable> nodes
+        if uep:
+            for var in uep.findall('variable'):
+                vp.append(var)
+
+        uep = xml_root.find('.//user_parameters')  # find unique entry point
         self.immune_activation_time.value = float(uep.find('.//immune_activation_time').text)
         self.number_of_immune_cells.value = int(uep.find('.//number_of_immune_cells').text)
         self.save_interval_after_therapy_start.value = float(uep.find('.//save_interval_after_therapy_start').text)
@@ -264,7 +270,13 @@ class UserTab(object):
 
     # Read values from the GUI widgets to enable editing XML
     def fill_xml(self, xml_root):
-        uep = xml_root.find('.//user_parameters')  # find unique entry point into XML 
+        uep = xml_root.find('.//microenvironment_setup')  # find unique entry point
+        vp = []   # pointers to <variable> nodes
+        if uep:
+            for var in uep.findall('variable'):
+                vp.append(var)
+
+        uep = xml_root.find('.//user_parameters')  # find unique entry point
         uep.find('.//immune_activation_time').text = str(self.immune_activation_time.value)
         uep.find('.//number_of_immune_cells').text = str(self.number_of_immune_cells.value)
         uep.find('.//save_interval_after_therapy_start').text = str(self.save_interval_after_therapy_start.value)
