@@ -116,12 +116,12 @@ def write_config_file(name):
     sub.update_params(config_tab, user_tab)
     # sub.numx =  math.ceil( (config_tab.xmax.value - config_tab.xmin.value) / config_tab.xdelta.value )
     # sub.numy =  math.ceil( (config_tab.ymax.value - config_tab.ymin.value) / config_tab.ydelta.value )
-    # print("pc4cancerimmune_v2.py: ------- sub.numx, sub.numy = ", sub.numx, sub.numy)
+    # print("pc4cancerimmune.py: ------- sub.numx, sub.numy = ", sub.numx, sub.numy)
 
 
 # callback from write_config_button
 # def write_config_file_cb(b):
-#     path_to_share = os.path.join('~', '.local','share','pc4cancerimmune_v2')
+#     path_to_share = os.path.join('~', '.local','share','pc4cancerimmune')
 #     dirname = os.path.expanduser(path_to_share)
 
 #     val = write_config_box.value
@@ -135,7 +135,7 @@ def write_config_file(name):
 # default & previous config options)
 def get_config_files():
     cf = {'DEFAULT': full_xml_filename}
-    path_to_share = os.path.join('~', '.local','share','pc4cancerimmune_v2')
+    path_to_share = os.path.join('~', '.local','share','pc4cancerimmune')
     dirname = os.path.expanduser(path_to_share)
     try:
         os.makedirs(dirname)
@@ -147,12 +147,12 @@ def get_config_files():
 
     # Find the dir path (full_path) to the cached dirs
     if nanoHUB_flag:
-        full_path = os.path.expanduser("~/data/results/.submit_cache/pc4cancerimmune_v2")  # does Windows like this?
+        full_path = os.path.expanduser("~/data/results/.submit_cache/pc4cancerimmune")  # does Windows like this?
     else:
         # local cache
         try:
             cachedir = os.environ['CACHEDIR']
-            full_path = os.path.join(cachedir, "pc4cancerimmune_v2")
+            full_path = os.path.join(cachedir, "pc4cancerimmune")
         except:
             # print("Exception in get_config_files")
             return cf
@@ -199,7 +199,7 @@ def run_done_func(s, rdir):
     
     if nanoHUB_flag:
         # Email the user that their job has completed
-        os.system("submit  mail2self -s 'nanoHUB pc4cancerimmune_v2' -t 'Your Run completed.'&")
+        os.system("submit  mail2self -s 'nanoHUB pc4cancerimmune' -t 'Your Run completed.'&")
 
     # save the config file to the cache directory
     shutil.copy('config.xml', rdir)
@@ -268,7 +268,7 @@ def run_sim_func(s):
 
     if nanoHUB_flag:
         if remote_cb.value:
-            s.run(run_name, "-v ncn-hub_M@brown -n 8 -w 1440 pc4cancerimmune_v2-r7 config.xml")   # "-r7" suffix??
+            s.run(run_name, "-v ncn-hub_M@brown -n 8 -w 1440 pc4cancerimmune-r7 config.xml")   # "-r7" suffix??
         else:
             # read_config.index = 0   # reset Dropdown 'Load Config' to 'DEFAULT' when Run interactively
             s.run(run_name, "--local ../bin/myproj config.xml")
@@ -334,14 +334,14 @@ if nanoHUB_flag:
     run_button = Submit(label='Run',
                        start_func=run_sim_func,
                         done_func=run_done_func,
-                        cachename='pc4cancerimmune_v2',
+                        cachename='pc4cancerimmune',
                         showcache=False,
                         outcb=outcb)
 else:
     if (hublib_flag):
         run_button = RunCommand(start_func=run_sim_func,
                             done_func=run_done_func,
-                            cachename='pc4cancerimmune_v2',
+                            cachename='pc4cancerimmune',
                             showcache=False,
                             outcb=outcb)  
     else:
