@@ -172,7 +172,8 @@ def get_config_files():
             return cf
 
     # Put all those cached (full) dirs into a list
-    dirs_all = [os.path.join(full_path, f) for f in os.listdir(full_path) if f != '.cache_table']
+    dirs_all0 = [os.path.join(full_path, f) for f in os.listdir(full_path) if f != '.cache_table']
+    dirs_all = [x for x in dirs_all0 if os.path.isdir(x)]
 
     # Only want those dirs that contain output files (.svg, .mat, etc), i.e., handle the
     # situation where a user cancels a Run before it really begins, which may create a (mostly) empty cached dir.
